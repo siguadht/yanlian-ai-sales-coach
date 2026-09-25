@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>销售新人陪练 · 验收版</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f6f8; color: #1f2329; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 20px; margin-bottom: 12px; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+  .tab { padding: 8px 16px; border: 1px solid #d0d5dd; background: #fff; border-radius: 8px; cursor: pointer; }
+  .tab.active { background: #1f6feb; color: #fff; border-color: #1f6feb; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+  .form-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: #667085; }
+  select, input[type=text], textarea { padding: 8px 10px; border: 1px solid #d0d5dd; border-radius: 8px; font-size: 14px; }
+  button { padding: 8px 16px; border: none; border-radius: 8px; background: #1f6feb; color: #fff; font-size: 14px; cursor: pointer; }
+  button.secondary { background: #fff; color: #1f6feb; border: 1px solid #1f6feb; }
+  button.danger { background: #d92d20; }
+  button:disabled { background: #98a2b3; cursor: not-allowed; }
+  #btn-mic { background: #12b76a; user-select: none; touch-action: none; -webkit-user-select: none; }
+  #btn-mic.mic-recording { background: #d92d20; }
+  .chat { max-height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+  .msg { max-width: 78%; padding: 8px 12px; border-radius: 10px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+  .msg.customer { background: #eef2f7; align-self: flex-start; }
+  .msg.sales { background: #d7e6ff; align-self: flex-end; }
+  .msg .who { font-size: 11px; color: #667085; margin-bottom: 2px; }
+  .msg .cursor { display: inline-block; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .input-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .input-row input { flex: 1 1 190px; min-width: 0; }
+  .rescue-tip { margin-top: 8px; color: #b54708; background: #fef3e2; border-radius: 8px; padding: 8px; display: none; }
+  .score-big { font-size: 40px; font-weight: 700; color: #1f6feb; }
+  .hl { border-left: 4px solid #d0d5dd; padding: 8px 10px; margin: 8px 0; background: #fafbfc; border-radius: 4px; }
+  .hl.good { border-color: #12b76a; }
+  .hl.bad { border-color: #f04438; }
+  .hl .demo { color: #1f6feb; }
+  .hint-box { background: #eef2ff; color: #3538cd; padding: 10px; border-radius: 8px; margin-top: 8px; display: none; }
+  .call-status { margin-top: 10px; color: #344054; font-size: 14px; min-height: 22px; }
+  .call-partial { margin-top: 4px; color: #667085; min-height: 22px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>销售新人陪练 · 验收版</h1>
+  <div class="tabs">
+    <div class="tab active" data-tab="practice">语音陪练</div>
+    <div class="tab" data-tab="assistant">话术助手</div>
+  </div>
+
+  <!-- 陪练 -->
+  <div class="panel active" id="panel-practice">
+    <div class="card">
+      <div class="form-row">
+        <div class="field">
+          <label>我要扮演</label>
+          <select id="player_role">
+            <option value="sales">销售（AI 扮客户）</option>
+            <option value="customer">客户（AI 示范销售）</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>行业</label>
+          <select id="industry">
+            <option value="装修">装修</option>
+            <option value="教育课程">教育课程</option>
+            <option value="保险">保险</option>
+          </select>
+        </div>
+        <div class="field" id="decoration-scene-field">
+          <label>装修部门／场景</label>
+          <select id="scene">
+            <option value="">请选择部门</option>
+            <option value="电销获客">电销 · 获客预约</option>
+            <option value="设计师逼单">设计师 · 方案报价与签约</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>客户类型</label>
+          <select id="customer_type">
+            <option value="爱砍价型">爱砍价型</option>
+            <option value="挑剔型">挑剔型</option>
+            <option value="冷漠型">冷漠型</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>刁难程度</label>
+          <select id="difficulty">
+            <option value="温和">温和</option>
+            <option value="难缠">难缠</option>
+          </select>
+        </div>
+        <button id="btn-start">开始陪练</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="chat" id="chat"></div>
+      <div class="rescue-tip" id="rescue-tip">卡壳了？点下方"救场"按钮，只给你一个方向。</div>
+      <div class="hint-box" id="hint-box"></div>
+      <div class="input-row">
+        <input type="text" id="sales-input" placeholder="输入你要说的话（当销售）" disabled>
+        <button id="btn-send" disabled>发送</button>
+        <button id="btn-call" class="secondary" disabled>开始连续通话</button>
+        <button id="btn-mic" disabled title="按住说话，松开结束">🎤 按住说话</button>
+        <button class="secondary" id="btn-rescue" disabled>救场</button>
+        <button class="danger" id="btn-end" disabled>结束并点评</button>
+      </div>
+      <div class="call-status" id="call-status">选择场景并开始陪练后，可开启连续通话。</div>
+      <div class="call-partial" id="call-partial"></div>
+    </div>
+
+    <div class="card" id="eval-card" style="display:none;">
+      <div class="score-big" id="eval-score"></div>
+      <div id="eval-highlights"></div>
+      <div id="eval-tone" style="margin-top:8px;color:#344054;"></div>
+    </div>
+  </div>
+
+  <!-- 话术助手 -->
+  <div class="panel" id="panel-assistant">
+    <div class="card">
+      <div class="chat" id="asst-chat"></div>
+      <div class="input-row">
+        <input type="text" id="asst-input" placeholder="问话术 / 产品知识 / 跟进建议">
+        <button id="btn-asst-send">发送</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+// ---- tab 切换 ----
+document.querySelectorAll('.tab').forEach(t => {
+  t.onclick = () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    $('panel-' + t.dataset.tab).classList.add('active');
+  };
+});
+
+// ---- SSE 读取（POST + fetch 流）----
+async function ssePost(url, body, onChunk, onDone, onError) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok || !res.body) {
+    let msg = '请求失败（' + res.status + '）';
+    try { const j = await res.json(); if (j.error) msg = j.error.message; } catch (e) {}
+    onError({ error: { message: msg } });
+    return;
+  }
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buf = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    let idx;
+    while ((idx = buf.indexOf('\n\n')) !== -1) {
+      const raw = buf.slice(0, idx);
+      buf = buf.slice(idx + 2);
+      let evt = 'message', dataStr = '';
+      for (const line of raw.split('\n')) {
+        if (line.startsWith('event: ')) evt = line.slice(7).trim();
+        else if (line.startsWith('data: ')) dataStr += line.slice(6);
+      }
+      if (!dataStr) continue;
+      let data; try { data = JSON.parse(dataStr); } catch (e) { continue; }
+      if (evt === 'chunk') onChunk(data);
+      else if (evt === 'done') onDone(data);
+      else if (evt === 'error') onError(data);
+    }
+  }
+}
+
+// ---- 陪练 ----
+let currentSessionId = null;
+let currentPlayerRole = 'sales';
+let idleTimer = null;
+let openingPlayback = Promise.resolve();
+
+function addMsg(role, text) {
+  const chat = $('chat');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  const who = document.createElement('div');
+  who.className = 'who';
+  who.textContent = role === 'customer' ? '客户' : '销售';
+  div.appendChild(who);
+  const span = document.createElement('span');
+  span.textContent = text;
+  div.appendChild(span);
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  return span;
+}
+
+$('industry').addEventListener('change', () => {
+  $('decoration-scene-field').style.display = $('industry').value === '装修' ? '' : 'none';
+  $('scene').value = '';
+});
+
+$('btn-start').onclick = async () => {
+  currentSessionId = null;
+  await stopLiveCall();
+  $('chat').innerHTML = '';
+  $('eval-card').style.display = 'none';
+  $('hint-box').style.display = 'none';
+  $('hint-box').textContent = '';
+  $('rescue-tip').style.display = 'none';
+  if ($('industry').value === '装修' && !$('scene').value) {
+    alert('请先选择装修部门：电销或设计师');
+    return;
+  }
+  $('btn-start').disabled = true;
+  $('btn-start').textContent = '正在开场…';
+  try {
+    const res = await fetch('/api/v1/practice/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        industry: $('industry').value,
+        scene: $('industry').value === '装修' ? $('scene').value : null,
+        customer_type: $('customer_type').value,
+        difficulty: $('difficulty').value,
+        player_role: $('player_role').value,
+      }),
+    });
+    const j = await res.json();
+    if (!res.ok) throw new Error(j.error ? j.error.message : '创建失败');
+    currentSessionId = j.session.id;
+    currentPlayerRole = j.session.player_role;
+    if (j.opening) {
+      addMsg('customer', j.opening);
+      openingPlayback = speak(j.opening);
+    } else {
+      openingPlayback = Promise.resolve();
+      $('call-status').textContent = '轮到您扮客户先开口，可以打字或开始连续通话。';
+    }
+    $('sales-input').placeholder = currentPlayerRole === 'sales' ? '输入你要说的话（当销售）' : '输入你要说的话（当客户）';
+    $('btn-end').textContent = currentPlayerRole === 'sales' ? '结束并点评' : '结束并看示范';
+    $('sales-input').disabled = false;
+    $('btn-send').disabled = false;
+    $('btn-mic').disabled = false;
+    $('btn-call').disabled = false;
+    $('btn-rescue').disabled = currentPlayerRole !== 'sales';
+    $('btn-end').disabled = false;
+    $('sales-input').focus();
+    startIdleTimer();
+  } catch (e) {
+    alert('开场失败：' + e.message);
+  } finally {
+    $('btn-start').disabled = false;
+    $('btn-start').textContent = '开始陪练';
+  }
+};
+
+function startIdleTimer() {
+  clearTimeout(idleTimer);
+  if (currentPlayerRole !== 'sales') return;
+  idleTimer = setTimeout(() => {
+    if (currentSessionId) $('rescue-tip').style.display = 'block';
+  }, 30000);
+}
+
+$('btn-send').onclick = async () => {
+  const input = $('sales-input');
+  const text = input.value.trim();
+  if (!text || !currentSessionId) return;
+  input.value = '';
+  addMsg(currentPlayerRole, text);
+  const span = addMsg(currentPlayerRole === 'sales' ? 'customer' : 'sales', '');
+  const cursor = document.createElement('span');
+  cursor.className = 'cursor';
+  cursor.textContent = '▌';
+  span.parentNode.appendChild(cursor);
+  $('btn-send').disabled = true;
+  let full = '';
+  await ssePost(
+    '/api/v1/practice/sessions/' + currentSessionId + '/messages',
+    { content: text },
+    (d) => { full += d.text; span.textContent = full; span.parentNode.appendChild(cursor); $('chat').scrollTop = $('chat').scrollHeight; },
+    (d) => { cursor.remove(); span.textContent = d.reply || full; startIdleTimer(); },
+    (d) => { cursor.remove(); span.textContent = '（出错了）' + (d.error ? d.error.message : ''); startIdleTimer(); }
+  );
+  $('btn-send').disabled = false;
+  input.focus();
+};
+
+$('btn-rescue').onclick = async () => {
+  if (!currentSessionId) return;
+  $('btn-rescue').disabled = true;
+  $('rescue-tip').style.display = 'none';
+  try {
+    const res = await fetch('/api/v1/practice/sessions/' + currentSessionId + '/rescue', { method: 'POST' });
+    const j = await res.json();
+    if (!res.ok) throw new Error(j.error ? j.error.message : '救场失败');
+    const box = $('hint-box');
+    box.textContent = '💡 方向：' + j.hint;
+    box.style.display = 'block';
+  } catch (e) {
+    alert('救场失败：' + e.message);
+  } finally {
+    $('btn-rescue').disabled = false;
+  }
+};
+
+$('btn-end').onclick = async () => {
+  if (!currentSessionId) return;
+  await stopLiveCall();
+  $('btn-end').disabled = true;
+  $('btn-end').textContent = '点评中…';
+  clearTimeout(idleTimer);
+  let finished = false;
+  try {
+    const res = await fetch('/api/v1/practice/sessions/' + currentSessionId + '/end', { method: 'POST' });
+    const j = await res.json();
+    if (!res.ok) throw new Error(j.error ? j.error.message : '点评失败');
+    renderEval(j.evaluation);
+    finished = true;
+  } catch (e) {
+    alert('点评失败：' + e.message);
+  } finally {
+    $('btn-end').disabled = false;
+    $('btn-end').textContent = currentPlayerRole === 'sales' ? '结束并点评' : '结束并看示范';
+    if (finished) {
+      $('sales-input').disabled = true;
+      $('btn-send').disabled = true;
+      $('btn-mic').disabled = true;
+      $('btn-call').disabled = true;
+      $('btn-rescue').disabled = true;
+    }
+  }
+};
+
+function renderEval(ev) {
+  $('eval-card').style.display = 'block';
+  const demo = ev.kind === 'demo';
+  $('eval-score').style.fontSize = demo ? '24px' : '40px';
+  $('eval-score').textContent = demo ? 'AI 销售示范拆解' : ev.score + ' 分';
+  const box = $('eval-highlights');
+  box.innerHTML = '';
+  ev.highlights.forEach(h => {
+    const div = document.createElement('div');
+    div.className = 'hl ' + h.type;
+    div.innerHTML = '<div>' + (h.type === 'good' ? (demo ? '✅ 可借鉴：' : '✅ 说得好：') : (demo ? '⚠️ 可改进：' : '⚠️ 掉坑了：')) + '<b>' + escapeHtml(h.point) + '</b></div>' +
+      '<div class="demo">💬 更好的说法：' + escapeHtml(h.demo) + '</div>';
+    box.appendChild(div);
+  });
+  $('eval-tone').textContent = demo ? '🧭 示范思路：' + ev.summary : '🗣️ 语气/底气：' + ev.tone;
+}
+
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+// ---- 语音（按住说话）----
+let mediaStream = null, audioCtx = null, processor = null, sourceNode = null, recChunks = [];
+
+async function startRecording() {
+  recChunks = [];
+  mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+  sourceNode = audioCtx.createMediaStreamSource(mediaStream);
+  processor = audioCtx.createScriptProcessor(4096, 1, 1);
+  processor.onaudioprocess = (e) => {
+    recChunks.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+  };
+  sourceNode.connect(processor);
+  processor.connect(audioCtx.destination);
+}
+
+function stopRecording() {
+  if (processor) { processor.disconnect(); processor = null; }
+  if (sourceNode) { sourceNode.disconnect(); sourceNode = null; }
+  if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop()); mediaStream = null; }
+  if (audioCtx) { audioCtx.close().catch(() => {}); audioCtx = null; }
+  const total = recChunks.reduce((a, c) => a + c.length, 0);
+  const merged = new Float32Array(total);
+  let off = 0;
+  for (const c of recChunks) { merged.set(c, off); off += c.length; }
+  return encodeWav(merged);
+}
+
+function encodeWav(samples) {
+  const sr = 16000;
+  const buf = new ArrayBuffer(44 + samples.length * 2);
+  const v = new DataView(buf);
+  const ws = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  ws(0, 'RIFF'); v.setUint32(4, 36 + samples.length * 2, true); ws(8, 'WAVE');
+  ws(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  ws(36, 'data'); v.setUint32(40, samples.length * 2, true);
+  let o = 44;
+  for (let i = 0; i < samples.length; i++) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    v.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+    o += 2;
+  }
+  return new Blob([buf], { type: 'audio/wav' });
+}
+
+function playAudioB64(b64) {
+  if (!b64) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const url = URL.createObjectURL(new Blob([bytes], { type: 'audio/wav' }));
+    const audio = new Audio(url);
+    const cleanup = () => URL.revokeObjectURL(url);
+    audio.onended = () => { cleanup(); resolve(); };
+    audio.onerror = () => { cleanup(); reject(new Error('语音播放失败')); };
+    audio.play().catch(e => { cleanup(); reject(e); });
+  });
+}
+
+async function speak(text) {
+  try {
+    const res = await fetch('/api/v1/voice/tts', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+    const j = await res.json();
+    if (res.ok && j.audio) await playAudioB64(j.audio);
+  } catch (e) {}
+}
+
+async function voiceTurn(audioBlob) {
+  const form = new FormData();
+  form.append('session_id', currentSessionId);
+  form.append('audio', audioBlob, 'speech.wav');
+  const res = await fetch('/api/v1/voice/turn', { method: 'POST', body: form });
+  const j = await res.json();
+  if (!res.ok) { alert(j.error ? j.error.message : '语音识别失败'); return; }
+  addMsg(j.user_role || currentPlayerRole, j.user_text || j.sales_text);
+  addMsg(j.reply_role || (currentPlayerRole === 'sales' ? 'customer' : 'sales'), j.reply_text);
+  playAudioB64(j.reply_audio).catch(() => {});
+  startIdleTimer();
+}
+
+const micBtn = $('btn-mic');
+micBtn.addEventListener('pointerdown', async (e) => {
+  e.preventDefault();
+  if (!currentSessionId || audioCtx) return;
+  try {
+    await startRecording();
+    micBtn.textContent = '🎤 松开结束';
+    micBtn.classList.add('mic-recording');
+  } catch (err) { alert('无法使用麦克风：' + err.message); }
+});
+async function finishRecording() {
+  if (!audioCtx) return;
+  const blob = stopRecording();
+  micBtn.textContent = '🎤 按住说话';
+  micBtn.classList.remove('mic-recording');
+  if (blob.size < 1000) { alert('录音太短，请按住说句话'); return; }
+  micBtn.disabled = true;
+  try { await voiceTurn(blob); } finally { micBtn.disabled = false; }
+}
+micBtn.addEventListener('pointerup', finishRecording);
+micBtn.addEventListener('pointerleave', finishRecording);
+
+// ---- 连续通话：实时 PCM 分片识别，客户播报期间暂停发送麦克风音频 ----
+let liveSocket = null, liveStream = null, liveCtx = null, liveSource = null, liveProcessor = null;
+let liveState = 'off';
+const callBtn = $('btn-call');
+const callText = { connecting: '正在连接实时识别…', listening: '正在听您说话，停顿后对方会回答', thinking: '对方正在思考…', speaking: '对方正在说话…', off: '连续通话已停止' };
+
+function showCallState(state) {
+  liveState = state;
+  $('call-status').textContent = callText[state] || state;
+  callBtn.textContent = state === 'off' ? '开始连续通话' : '结束连续通话';
+  $('btn-mic').disabled = state !== 'off' || !currentSessionId;
+  if (state === 'listening') startIdleTimer();
+  else clearTimeout(idleTimer);
+}
+
+function pcm16At16k(input, inputRate) {
+  const ratio = inputRate / 16000;
+  const count = Math.floor(input.length / ratio);
+  const pcm = new Int16Array(count);
+  for (let i = 0; i < count; i++) {
+    const start = Math.floor(i * ratio);
+    const end = Math.min(input.length, Math.floor((i + 1) * ratio));
+    let sum = 0;
+    for (let j = start; j < Math.max(start + 1, end); j++) sum += input[j];
+    const sample = Math.max(-1, Math.min(1, sum / Math.max(1, end - start)));
+    pcm[i] = sample < 0 ? sample * 0x8000 : sample * 0x7fff;
+  }
+  return pcm.buffer;
+}
+
+async function stopLiveCall(message) {
+  const sock = liveSocket;
+  liveSocket = null;
+  showCallState('off');
+  if (message) $('call-status').textContent = message;
+  $('call-partial').textContent = '';
+  if (liveProcessor) { liveProcessor.disconnect(); liveProcessor.onaudioprocess = null; liveProcessor = null; }
+  if (liveSource) { liveSource.disconnect(); liveSource = null; }
+  if (liveStream) { liveStream.getTracks().forEach(t => t.stop()); liveStream = null; }
+  if (liveCtx) { await liveCtx.close().catch(() => {}); liveCtx = null; }
+  if (sock && sock.readyState === WebSocket.OPEN) sock.send(JSON.stringify({ type: 'stop' }));
+  if (sock) sock.close();
+}
+
+async function startLiveCall() {
+  if (!currentSessionId) return;
+  if (audioCtx) stopRecording();
+  liveStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  await openingPlayback;
+  liveCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+  await liveCtx.resume();
+  liveSource = liveCtx.createMediaStreamSource(liveStream);
+  liveProcessor = liveCtx.createScriptProcessor(4096, 1, 1);
+  liveProcessor.onaudioprocess = e => {
+    if (liveState !== 'listening' || !liveSocket || liveSocket.readyState !== WebSocket.OPEN) return;
+    if (liveSocket.bufferedAmount > 512 * 1024) { $('call-status').textContent = '网络拥堵，请结束后重试'; return; }
+    liveSocket.send(pcm16At16k(e.inputBuffer.getChannelData(0), liveCtx.sampleRate));
+  };
+  liveSource.connect(liveProcessor);
+  liveProcessor.connect(liveCtx.destination);
+  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const sock = new WebSocket(protocol + '//' + location.host + '/api/v1/voice/live/' + currentSessionId);
+  liveSocket = sock;
+  showCallState('connecting');
+  sock.onmessage = async e => {
+    if (liveSocket !== sock) return;
+    const msg = JSON.parse(e.data);
+    if (msg.type === 'state') showCallState(msg.state);
+    if (msg.type === 'partial') { $('call-partial').textContent = '识别中：' + msg.text; startIdleTimer(); }
+    if (msg.type === 'final') { $('call-partial').textContent = ''; addMsg(currentPlayerRole, msg.text); }
+    if (msg.type === 'reply') {
+      addMsg(msg.reply_role || (currentPlayerRole === 'sales' ? 'customer' : 'sales'), msg.reply_text);
+      showCallState('speaking');
+      try {
+        if (msg.audio_error) $('call-status').textContent = '本轮语音合成失败，已显示文字；即将继续收听';
+        await playAudioB64(msg.reply_audio);
+        if (liveSocket === sock && sock.readyState === WebSocket.OPEN) {
+          setTimeout(() => {
+            if (liveSocket === sock && sock.readyState === WebSocket.OPEN) sock.send(JSON.stringify({ type: 'resume' }));
+          }, 250);
+        }
+      } catch (err) {
+        $('call-status').textContent = '语音播放失败，请结束通话后重试';
+      }
+    }
+    if (msg.type === 'error') {
+      await stopLiveCall('连续通话出错：' + msg.error.message);
+      alert('连续通话出错：' + msg.error.message);
+    }
+  };
+  sock.onerror = () => { $('call-status').textContent = '连接失败，请重试'; };
+  sock.onclose = () => { if (liveSocket === sock) stopLiveCall('连接已断开，请重试'); };
+}
+
+callBtn.onclick = async () => {
+  if (liveSocket) { await stopLiveCall(); return; }
+  callBtn.disabled = true;
+  try { await startLiveCall(); }
+  catch (err) { await stopLiveCall(); alert('无法开始连续通话：' + err.message); }
+  finally { callBtn.disabled = false; }
+};
+
+// ---- 话术助手 ----
+function addAsstMsg(role, text) {
+  const chat = $('asst-chat');
+  const div = document.createElement('div');
+  div.className = 'msg ' + (role === 'user' ? 'sales' : 'customer');
+  div.innerHTML = '<div class="who">' + (role === 'user' ? '我' : '助手') + '</div><span>' + escapeHtml(text) + '</span>';
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  return div.querySelector('span');
+}
+
+$('btn-asst-send').onclick = async () => {
+  const input = $('asst-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  addAsstMsg('user', text);
+  const div = document.createElement('div');
+  div.className = 'msg customer';
+  div.innerHTML = '<div class="who">助手</div><span></span>';
+  $('asst-chat').appendChild(div);
+  const span = div.querySelector('span');
+  $('btn-asst-send').disabled = true;
+  let full = '';
+  await ssePost(
+    '/api/v1/assistant/chat',
+    { question: text, industry: $('industry').value },
+    (d) => { full += d.text; span.textContent = full; $('asst-chat').scrollTop = $('asst-chat').scrollHeight; },
+    (d) => { span.textContent = d.reply || full; },
+    (d) => { span.textContent = '（出错了）' + (d.error ? d.error.message : ''); }
+  );
+  $('btn-asst-send').disabled = false;
+  input.focus();
+};
+
+$('asst-input').addEventListener('keydown', e => { if (e.key === 'Enter') $('btn-asst-send').click(); });
+$('sales-input').addEventListener('keydown', e => { if (e.key === 'Enter') $('btn-send').click(); });
+</script>
+</body>
+</html>
