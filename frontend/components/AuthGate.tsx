@@ -9,7 +9,7 @@ import { Brand } from "@/components/Brand";
 
 export function AuthGate({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const isPublicPage = pathname === "/landing";
+  const isPublicPage = pathname === "/landing" || process.env.NEXT_PUBLIC_SITE_MODE === "landing";
   const [ready, setReady] = useState(false);
   const [checking, setChecking] = useState(true);
   const [code, setCode] = useState("");

@@ -4,7 +4,19 @@
 
 > This repository contains a locally runnable MVP. It does not include hosted model credentials or a public cloud demo.
 
-![Yanlian landing page](docs/assets/landing.png)
+**[View the interactive product story →](https://siguadht.github.io/yanlian-ai-sales-coach/)**
+
+The `.io` site is an interactive promotional page and does not call the model or speech services. The complete product runs locally with your own credentials.
+
+## Product screenshots
+
+![Yanlian practice workspace](docs/assets/product-workspace.png)
+
+| Real-time voice practice | Sales assistant |
+| --- | --- |
+| ![Real-time voice practice](docs/assets/product-voice.png) | ![Sales assistant](docs/assets/product-assistant.png) |
+
+![Practice history and score trend](docs/assets/product-history.png)
 
 ## Features
 

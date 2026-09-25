@@ -10,6 +10,7 @@ import { createSession, endSession, getSession, sendText, synthesizeSpeech } fro
 import { playWavBase64 } from "@/lib/audio";
 import { useLiveCall } from "@/hooks/use-live-call";
 import type { BusinessRole, CustomerType, DecorationScene, Difficulty, Evaluation, Industry, Message, PlayerRole, Session } from "@/lib/types";
+import LandingPage from "./landing/page";
 
 const industries: Industry[] = ["装修", "教育课程", "保险"];
 const customerTypes: CustomerType[] = ["爱砍价型", "挑剔型", "冷漠型"];
@@ -28,7 +29,7 @@ const callText = {
   disconnected: ["连接已断开", "已保存的对话还在，可以重新连接"],
 };
 
-export default function Home() {
+function ProductHome() {
   const [role, setRole] = useState<PlayerRole>("sales");
   const [industry, setIndustry] = useState<Industry>("装修");
   const [scene, setScene] = useState<DecorationScene | null>(null);
@@ -356,4 +357,9 @@ export default function Home() {
       <footer className="page-footer"><span>言练 · 销售新人陪练</span><span>练习记录只保存文字，不保存原始录音</span></footer>
     </div>
   </div>;
+}
+
+export default function Home() {
+  if (process.env.NEXT_PUBLIC_SITE_MODE === "landing") return <LandingPage />;
+  return <ProductHome />;
 }

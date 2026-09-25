@@ -31,6 +31,8 @@ const scenes = [
 ];
 
 export default function LandingPage() {
+  const promoOnly = process.env.NEXT_PUBLIC_SITE_MODE === "landing";
+  const repositoryUrl = "https://github.com/siguadht/yanlian-ai-sales-coach";
   const [role, setRole] = useState<DemoRole>("sales");
   const [headlineIndex, setHeadlineIndex] = useState(0);
   const [heroRole, setHeroRole] = useState<DemoRole>("sales");
@@ -93,14 +95,16 @@ export default function LandingPage() {
 
   return <main id="top" className={styles.page}>
     <header className={styles.nav}>
-      <Link className={styles.brandLink} href="/landing" aria-label="言练宣传页"><Brand /></Link>
+      <Link className={styles.brandLink} href={promoOnly ? "/" : "/landing"} aria-label="言练宣传页"><Brand /></Link>
       <nav aria-label="宣传页导航">
         <a href="#how">怎么练</a>
         <a href="#roles">双角色</a>
         <a href="#scenes">适用场景</a>
         <a href="#privacy">数据边界</a>
       </nav>
-      <Link className={styles.navCta} href="/">进入体验 <ArrowRight size={15} /></Link>
+      {promoOnly
+        ? <a className={styles.navCta} href={repositoryUrl} target="_blank" rel="noreferrer">查看项目 <ArrowRight size={15} /></a>
+        : <Link className={styles.navCta} href="/">进入体验 <ArrowRight size={15} /></Link>}
     </header>
 
     <section className={styles.playHero} onPointerMove={moveHeroLight}>
@@ -118,7 +122,9 @@ export default function LandingPage() {
         <p>言练把销售新人最容易卡住的真实对话，变成可以反复开口、即时复盘的 AI 陪练。</p>
         <div className={styles.heroActions}>
           <a className={styles.primaryCta} href="#playground">先玩一轮 <Play size={15} fill="currentColor" /></a>
-          <Link className={styles.textCta} href="/">进入完整体验 <ArrowRight size={15} /></Link>
+          {promoOnly
+            ? <a className={styles.textCta} href={repositoryUrl} target="_blank" rel="noreferrer">查看源码与截图 <ArrowRight size={15} /></a>
+            : <Link className={styles.textCta} href="/">进入完整体验 <ArrowRight size={15} /></Link>}
         </div>
         <div className={styles.heroFacts}>
           <span><strong>2</strong> 种角色</span>
@@ -267,8 +273,10 @@ export default function LandingPage() {
       <div className={styles.finalOrb}><AiCustomerAvatar state="listening" featured /></div>
       <span>READY WHEN YOU ARE</span>
       <h2>下一次开口之前，<br />先在这里练一次。</h2>
-      <p>选一个角色，进入一段真实销售对话。</p>
-      <Link href="/">开始陪练 <ArrowRight size={19} /></Link>
+      <p>{promoOnly ? "查看产品截图、技术实现与本机运行方法。" : "选一个角色，进入一段真实销售对话。"}</p>
+      {promoOnly
+        ? <a href={repositoryUrl} target="_blank" rel="noreferrer">前往 GitHub <ArrowRight size={19} /></a>
+        : <Link href="/">开始陪练 <ArrowRight size={19} /></Link>}
     </section>
 
     <footer className={styles.footer}>
