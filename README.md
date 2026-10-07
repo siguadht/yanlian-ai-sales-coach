@@ -1,20 +1,66 @@
 # Yanlian · AI Sales Practice Coach
 
-言练是一款面向销售新人的双角色 AI 陪练：你可以扮演销售，与 AI 客户进行真实异议对话并获得评分；也可以扮演客户，观察 AI 销售如何推进需求、处理顾虑并完成复盘。
+<p align="center">
+  <b>让销售新人先在 AI 客户面前犯错，再去面对真正的客户。</b><br/>
+  双角色 · 实时语音 · 场景化训练 · 评分复盘
+</p>
 
-> This repository contains a locally runnable MVP. It does not include hosted model credentials or a public cloud demo.
+<p align="center">
+  <a href="https://siguadht.github.io/yanlian-ai-sales-coach/"><b>🌐 在线体验官网</b></a>
+  &nbsp;·&nbsp;
+  <a href="#quick-start"><b>▶ 本地运行完整产品</b></a>
+  &nbsp;·&nbsp;
+  <a href="#product-demo"><b>🖼 查看产品界面</b></a>
+</p>
 
-**[View the interactive product story →](https://siguadht.github.io/yanlian-ai-sales-coach/)**
+<p align="center">
+  <a href="https://siguadht.github.io/yanlian-ai-sales-coach/">
+    <img src="docs/assets/product-workspace.png" alt="言练 AI 销售陪练工作台演示" width="100%" />
+  </a>
+</p>
 
-The `.io` site is an interactive promotional page and does not call the model or speech services. The complete product runs locally with your own credentials.
+言练是一款面向销售新人的双角色 AI 陪练：你可以扮演销售，与 AI 客户进行真实异议对话并获得评分；也可以扮演客户，观察 AI 销售如何推进需求、处理顾虑并完成复盘。产品覆盖装修、教育和保险场景，并提供实时语音、文字陪练、话术助手与训练历史。
 
-## Product screenshots
+## 在线演示 / Live demo
+
+| 入口 | 能体验什么 | 说明 |
+| --- | --- | --- |
+| **[互动产品官网 →](https://siguadht.github.io/yanlian-ai-sales-coach/)** | 产品故事、双角色切换、异议处理流程和复盘演示 | 免费公开访问，不调用模型或语音服务 |
+| **[本地完整产品](#quick-start)** | 实时语音、AI 客户对话、AI 销售示范、评分与历史记录 | 需要自行配置模型与阿里云语音凭证 |
+
+> GitHub Pages 是无需登录的互动宣传演示；完整 AI 产品在本地运行。仓库不包含模型密钥、体验码、用户数据库或原始录音。
+
+<details>
+<summary><b>展开查看官网完整长页</b></summary>
+<br/>
+<a href="https://siguadht.github.io/yanlian-ai-sales-coach/">
+  <img src="docs/assets/landing.png" alt="言练互动产品官网完整页面" width="100%" />
+</a>
+</details>
+
+## Product demo
+
+### 1. 创建训练场景
+
+根据行业、岗位、训练主题、难度和扮演角色创建练习。装修行业进一步区分电销获客与设计师签约两条业务线。
 
 ![Yanlian practice workspace](docs/assets/product-workspace.png)
 
-| Real-time voice practice | Sales assistant |
-| --- | --- |
-| ![Real-time voice practice](docs/assets/product-voice.png) | ![Sales assistant](docs/assets/product-assistant.png) |
+### 2. 进行实时语音陪练
+
+用户扮演销售时，AI 作为客户提出异议并在结束后评分；用户扮演客户时，AI 作为销售进行示范，结束后输出示范拆解。
+
+![Real-time voice practice](docs/assets/product-voice.png)
+
+### 3. 随时调用话术助手
+
+围绕开场、需求探询、价格异议、竞品比较和成交推进获得可执行的话术建议。
+
+![Sales assistant](docs/assets/product-assistant.png)
+
+### 4. 查看训练历史与趋势
+
+保留文字对话、训练结果和分数趋势，支持回看与继续练习；原始录音不落盘。
 
 ![Practice history and score trend](docs/assets/product-history.png)
 
